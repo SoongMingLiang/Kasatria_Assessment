@@ -82,7 +82,7 @@
 	</head>
 	<body>
 
-		<div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - periodic table.</div>
+		<!-- <div id="info"><a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> css3d - periodic table.</div> -->
 		<div id="container"></div>
 		<div id="menu">
 			<button id="table">TABLE</button>
@@ -255,7 +255,7 @@
 
 					const element = document.createElement( 'div' );
 					element.className = 'element';
-					element.style.backgroundColor = 'rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')';
+					element.style.backgroundColor = table[i+2] == 'M' ? ('rgba(0,127,127,' + ( Math.random() * 0.5 + 0.25 ) + ')') : ('rgba(248,0,158,' + ( Math.random() * 0.5 + 0.25 ) + ')');
 
 					const number = document.createElement( 'div' );
 					number.className = 'number';
