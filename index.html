@@ -357,7 +357,8 @@
 				let coneObjects = objects.length - baseObjects;
 
 				const spokes = 10;
-				const thetaIncrement = 2 * Math.PI / spokes;  // Calculate once for both cone and base
+				const thetaIncrement = 2 * Math.PI / spokes;
+				const distanceBetweenObjectsOnSpoke = baseRadius / (baseObjects / spokes);
 
 				for (let i = 0, l = objects.length; i < l; i++) {
 
@@ -365,7 +366,7 @@
 
 					// Distribute the first set of objects along the cone
 					if (i < coneObjects) {
-						const theta = i * thetaIncrement;  // Use common angular increment
+						const theta = i * thetaIncrement;
 						const y = - ( i * (coneHeight / coneObjects) ) + (coneHeight - coneHeight / coneObjects);
 
 						const currentRadius = baseRadius * (coneHeight - y) / coneHeight;
@@ -382,19 +383,18 @@
 					else {
 						const objectsPerSpoke = baseObjects / spokes;
 						const spokeIndex = Math.floor((i - coneObjects) / objectsPerSpoke);
-
-						const fractionAlongSpoke = (1 - ((i - coneObjects) % objectsPerSpoke) / objectsPerSpoke) - 0.13;
 						
-						const angle = spokeIndex * thetaIncrement -( Math.PI / 2 );  // Use common angular increment
+						// Calculate position along spoke based on fixed distance intervals
+						const distanceAlongSpoke = ((i - coneObjects) % objectsPerSpoke) * distanceBetweenObjectsOnSpoke;
+						
+						const angle = spokeIndex * thetaIncrement -( Math.PI / 2 );
 
-						const r = fractionAlongSpoke * baseRadius;
-
-						object.position.x = r * Math.cos(angle);
-						object.position.z = r * Math.sin(angle);
+						object.position.x = distanceAlongSpoke * Math.cos(angle);
+						object.position.z = distanceAlongSpoke * Math.sin(angle);
 						object.position.y = 0;
 
-						if (fractionAlongSpoke >= 0.87) {  // Adjusted the condition for center object
-							object.lookAt(new THREE.Vector3(1, 0, 0));  // Make it point along the positive X-axis
+						if (distanceAlongSpoke == 0) {  // If it's the first object on the spoke
+							object.lookAt(new THREE.Vector3(1, 0, 0));
 							object.rotateX(Math.PI / 2);
 						} else {
 							object.lookAt(new THREE.Vector3(0, 1, 0));
