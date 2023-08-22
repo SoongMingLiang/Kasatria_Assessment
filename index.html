@@ -352,23 +352,49 @@
 				// cone
 
 				let baseRadius = 900; 
-				let coneHeight = objects.length * 8; 
+				let coneHeight = objects.length * 10; 
+				let baseObjects = Math.floor(objects.length * 0.25);  // assuming you want 25% of objects on the base
+				let coneObjects = objects.length - baseObjects;
 
-				for ( let i = 0, l = objects.length; i < l; i++ ) {
-
-					const theta = i * 0.175 + Math.PI;
-					const y = - ( i * 8 ) + 450;
-
-					const currentRadius = baseRadius * (coneHeight - y) / coneHeight;
+				for (let i = 0, l = objects.length; i < l; i++) {
+					
 					const object = new THREE.Object3D();
 
-					object.position.setFromCylindricalCoords(currentRadius, theta, y);
+					// Distribute the first set of objects along the cone
+					if (i < coneObjects) {
+						const theta = i * 4 + Math.PI;
+						const y = - ( i * (coneHeight / coneObjects) ) + (coneHeight - coneHeight / coneObjects); // distribute evenly over the height
 
-					vector.x = object.position.x * 2;
-					vector.y = object.position.y;
-					vector.z = object.position.z * 2;
+						const currentRadius = baseRadius * (coneHeight - y) / coneHeight;
 
-					object.lookAt(vector);
+						object.position.setFromCylindricalCoords(currentRadius, theta, y);
+
+						vector.x = object.position.x * 2;
+						vector.y = object.position.y;
+						vector.z = object.position.z * 2;
+
+						object.lookAt(vector);
+					} 
+					// Distribute the remaining objects on the base
+					else {
+						const rings = Math.sqrt(baseObjects); // approximate number of rings
+						const ringIndex = Math.floor((i - coneObjects) / rings);
+						const objectsOnRing = 2 * Math.PI * (ringIndex + 1) * baseRadius / rings / baseRadius; // proportional distribution
+
+						const angleIncrement = 2 * Math.PI / objectsOnRing;
+						const angle = ((i - coneObjects) - ringIndex * rings) * angleIncrement;
+
+						const r = (ringIndex + 1) * baseRadius / rings;
+
+						object.position.x = r * Math.cos(angle);
+						object.position.y = 0; // Set at the bottom of the cone
+						object.position.z = r * Math.sin(angle);
+
+						// Make the object look upward
+						object.lookAt(new THREE.Vector3(0, 1, 0));
+
+						object.rotateX(Math.PI / 2);
+					}
 
 					targets.cone.push(object);
 				}
