@@ -351,19 +351,22 @@
 
 				// cone
 
-				let baseRadius = 900; 
-				let coneHeight = objects.length * 10; 
-				let baseObjects = Math.floor(objects.length * 0.25);  // assuming you want 25% of objects on the base
+				let baseRadius = 900;
+				let coneHeight = objects.length * 10;
+				let baseObjects = Math.floor(objects.length * 0.25) + 1;
 				let coneObjects = objects.length - baseObjects;
 
+				const spokes = 10;
+				const thetaIncrement = 2 * Math.PI / spokes;  // Calculate once for both cone and base
+
 				for (let i = 0, l = objects.length; i < l; i++) {
-					
+
 					const object = new THREE.Object3D();
 
 					// Distribute the first set of objects along the cone
 					if (i < coneObjects) {
-						const theta = i * 4 + Math.PI;
-						const y = - ( i * (coneHeight / coneObjects) ) + (coneHeight - coneHeight / coneObjects); // distribute evenly over the height
+						const theta = i * thetaIncrement;  // Use common angular increment
+						const y = - ( i * (coneHeight / coneObjects) ) + (coneHeight - coneHeight / coneObjects);
 
 						const currentRadius = baseRadius * (coneHeight - y) / coneHeight;
 
@@ -377,23 +380,26 @@
 					} 
 					// Distribute the remaining objects on the base
 					else {
-						const rings = Math.sqrt(baseObjects); // approximate number of rings
-						const ringIndex = Math.floor((i - coneObjects) / rings);
-						const objectsOnRing = 2 * Math.PI * (ringIndex + 1) * baseRadius / rings / baseRadius; // proportional distribution
+						const objectsPerSpoke = baseObjects / spokes;
+						const spokeIndex = Math.floor((i - coneObjects) / objectsPerSpoke);
 
-						const angleIncrement = 2 * Math.PI / objectsOnRing;
-						const angle = ((i - coneObjects) - ringIndex * rings) * angleIncrement;
+						const fractionAlongSpoke = (1 - ((i - coneObjects) % objectsPerSpoke) / objectsPerSpoke) - 0.13;
+						
+						const angle = spokeIndex * thetaIncrement -( Math.PI / 2 );  // Use common angular increment
 
-						const r = (ringIndex + 1) * baseRadius / rings;
+						const r = fractionAlongSpoke * baseRadius;
 
 						object.position.x = r * Math.cos(angle);
-						object.position.y = 0; // Set at the bottom of the cone
 						object.position.z = r * Math.sin(angle);
+						object.position.y = 0;
 
-						// Make the object look upward
-						object.lookAt(new THREE.Vector3(0, 1, 0));
-
-						object.rotateX(Math.PI / 2);
+						if (fractionAlongSpoke >= 0.87) {  // Adjusted the condition for center object
+							object.lookAt(new THREE.Vector3(1, 0, 0));  // Make it point along the positive X-axis
+							object.rotateX(Math.PI / 2);
+						} else {
+							object.lookAt(new THREE.Vector3(0, 1, 0));
+							object.rotateX(Math.PI / 2);
+						}
 					}
 
 					targets.cone.push(object);
